@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>To-do</title>
+  <!-- build:css styles/app.min.css -->
+  <link rel="stylesheet" type="text/css" href="assets/styles/css/app.css" />
+  <!-- endbuild -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <div class="container">
+      <header class="todo-header clearfix container">
+        <div class="row">
+          <div class="col-md-6">
+            <h3 class="pull-left">To-do List</h3>
+          </div>
+          <div class="col-md-6">
+            <h3 class="todo-counter pull-right">
+              <span class="todos-tally hidden">
+                <span class="todos-completed">0</span>
+                <span> /</span>
+              </span>
+              <span class="todos-total">0</span>
+            </h3>
+          </div>
+        </div>
+      </header>
+      <section class="todo-input">
+          <div class="form-group">
+            <input class="form-control todo-entry" type="text" id="to-do" placeholder="Alright. Whaddya need to remember?" autofocus />
+          </div>
+          <button class="btn btn-default btn-add" type="button">Add</button>
+      </section>
+      <section class="todo-output">
+        <ul class="todo-list container hidden">
+        </ul>
+      </section>
+      <footer class="todo-controls">
+        <div class="btn-toolbar">
+          <div class="btn-group">
+            <button class="btn btn-default btn-show-all">
+              All
+            </button>
+            <button class="btn btn-default btn-show-completed">
+              Completed
+            </button>
+            <button class="btn btn-default btn-show-uncompleted">
+              Uncompleted
+            </button>
+          </div>
+          <button class="btn btn-danger pull-right btn-clear-all">
+            Clear
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+  <!-- build:js scripts/app.js -->
+  <script src="assets/scripts/store.js"></script>
+  <script src="assets/scripts/model.js"></script>
+  <script src="assets/scripts/view.js"></script>
+  <script src="assets/scripts/controller.js"></script>
+  <script src="assets/scripts/app.js"></script>
+  <!-- endbuild -->
+</body>
+</html>

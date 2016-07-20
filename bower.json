@@ -1,0 +1,21 @@
+{
+  "name": "todo-app",
+  "description": "an app to tell what you need to do",
+  "main": "index.js",
+  "authors": [
+    "smmbll"
+  ],
+  "license": "ISC",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "v4.0.0-alpha.2",
+    "components-font-awesome": "^4.6.3"
+  }
+}

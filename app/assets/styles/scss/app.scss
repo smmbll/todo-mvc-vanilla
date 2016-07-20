@@ -1,0 +1,102 @@
+@import "bootstrap";
+@import "font-awesome";
+
+ul {
+  padding:0;
+  list-style:none;
+}
+
+/* Utilities that seem to be missing from bootstrap 4 */
+.pull-right {
+  float: right !important;
+}
+
+.hidden {
+  display:none !important;
+}
+
+.show {
+  display: block;
+}
+
+/* Basic styling */
+
+/* Overload bootstrap-specific styles */
+button.close {
+  line-height:1.4;
+}
+
+.btn-default {
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+
+    &:hover, &:active, &:focus, &.focus {
+      color: #333;
+      background-color: #e6e6e6;
+      border-color: #adadad;
+    }
+}
+
+/* To-do list */
+
+.todo-header, .todo-input, .todo-controls, .todo-list-item {
+  border:1px solid $gray-lighter;
+}
+
+.todo-header {
+  margin-top:20px;
+  padding:15px;
+  border-radius:4px 4px 0 0;
+  border-bottom:none;
+  color:#222;
+}
+
+.todo-input {
+  border-bottom:none;
+  padding:15px;
+}
+
+.todo-list {
+  margin-bottom:0;
+  .todo-list-item {
+    padding:10px 0;
+    border-top:none;
+    background-color: $gray-lighter;
+
+    .todo-number {
+      font-weight:bold;
+    }
+
+    .todo-number, .todo-text {
+      line-height: 2;
+    }
+
+    .btn-complete {
+      font-size:24px;
+    }
+
+    &:hover {
+      border:1px solid $gray;
+      background-color:$gray-light;
+    }
+
+    &.complete {
+      .todo-text {
+        text-decoration:line-through;
+      }
+
+      .btn-complete {
+        color:$brand-success;
+        opacity:1;
+      }
+    }
+  }
+}
+
+.todo-controls {
+  border-radius:0 0 4px 4px;
+  .btn-toolbar {
+    padding:15px;
+  }
+}
