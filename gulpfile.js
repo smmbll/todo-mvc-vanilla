@@ -14,6 +14,13 @@ var lazypipe = require('lazypipe');
 var browserSync = require('browser-sync');
 
 /**
+ * Configuration
+ */
+
+var config = require('./config').gulp;
+var paths = config.paths;
+
+/**
  * Development Tasks
  */
 
@@ -22,30 +29,30 @@ gulp.task('browserSync', function() {
   browserSync({
     open: false,
     server: {
-      baseDir: './app',
+      baseDir: './' + paths.src,
       routes: {
-        "/bower_components": "./bower_components"
+        '/bower_components' : paths.bower
       }
     }
   })
 })
 
 gulp.task('sass', function() {
-  gulp.src('app/assets/styles/scss/**/*.scss')
+  gulp.src(paths.src + paths.styles + '/scss/**/*.scss')
     .pipe(sass({
       includePaths: [
-        './bower_components/bootstrap/scss',
-        './bower_components/components-font-awesome/scss'
+        paths.bower + '/bootstrap/scss',
+        paths.bower + '/components-font-awesome/scss'
       ]
     }).on('error',sass.logError))
-    .pipe(gulp.dest('app/assets/styles/css/'))
+    .pipe(gulp.dest(paths.src + paths.styles + '/css/'))
     .pipe(browserSync.reload({
       stream: true
     }));
 })
 
 gulp.task('js', function() {
-  gulp.src('app/assets/scripts/**/*.js')
+  gulp.src(paths.src + paths.scripts + '/**/*.js')
     //.pipe(jslint())
     //.pipe(jslint.reporter('stylish'))
     .pipe(browserSync.reload({
@@ -55,15 +62,15 @@ gulp.task('js', function() {
 
 // Get font-awesome icons out of bower and into fonts
 gulp.task('icons', function() { 
-    gulp.src('./bower_components/components-font-awesome/fonts/**.*') 
-        .pipe(gulp.dest('./app/assets/styles/fonts')); 
+    gulp.src(paths.bower + '/components-font-awesome/fonts/**.*') 
+        .pipe(gulp.dest(paths.src + paths.styles + '/fonts')); 
 });
 
 // Watchers
 gulp.task('watch', function() {
-  gulp.watch('app/assets/styles/scss/**/*.scss',['sass']);
-  gulp.watch('app/*.html',browserSync.reload);
-  gulp.watch('app/assets/scripts/**/*.js',['js']);
+  gulp.watch(paths.src + paths.styles + '/scss/**/*.scss',['sass']);
+  gulp.watch(paths.src + '/*.html',browserSync.reload);
+  gulp.watch(paths.src + paths.scripts + '/**/*.js',['js']);
 });
 
 gulp.task('default', ['icons','sass','js','browserSync','watch']);
@@ -76,14 +83,14 @@ gulp.task('default', ['icons','sass','js','browserSync','watch']);
 gulp.task('useref', function() {
   // For running sequential tasks in gulp-if
   var pipeline = lazypipe()
-    .pipe(autoprefixer, { browsers: ['last 2 versions'] })
+    .pipe(autoprefixer, config.autoprefixer)
     .pipe(cssnano);
 
-  gulp.src('app/*.html')
+  gulp.src(paths.src + '/*.html')
     .pipe(useref())
     .pipe(gulpIf('*.js', uglify()))
     .pipe(gulpIf('*.css', pipeline()))
-    .pipe(gulp.dest('dist'));
+    .pipe(gulp.dest(paths.dist));
 });
 
 // Build
