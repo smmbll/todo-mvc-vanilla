@@ -22,8 +22,10 @@ ul {
 /* Basic styling */
 
 /* Overload bootstrap-specific styles */
-button.close {
-  line-height:1.4;
+button {
+   &.close {
+    line-height:1.4;
+  }
 }
 
 .btn-default {
@@ -35,6 +37,12 @@ button.close {
       color: #333;
       background-color: #e6e6e6;
       border-color: #adadad;
+    }
+
+    &.active {
+      background-color: $gray-light;
+      color: $gray-lighter;
+      border-color: $gray-light;
     }
 }
 
@@ -74,6 +82,7 @@ button.close {
 
     .btn-complete {
       font-size:24px;
+      margin-right:10px;
     }
 
     &:hover {

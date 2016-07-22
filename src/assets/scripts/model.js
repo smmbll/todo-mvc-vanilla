@@ -13,14 +13,15 @@
 
   /**
    *
-   * Find todo(s) by parameter
+   * Filter todo(s) by parameter
    *
    * @param {function} cb Callback
    *
    */
 
-  Model.prototype.query = function(params,cb) {
-    return this.store.find(params,cb);
+  Model.prototype.setFilter = function(filter,cb) {
+    console.log('filter is ',filter,cb);
+    return this.store.filter(filter,cb);
   }
 
   /**
@@ -57,7 +58,7 @@
 
   /**
    *
-   * Update todo item
+   * Toggle completion status of todo item
    *
    * @param {number} [id] The id of the todo to remove.
    * @param {function} cb Callback
@@ -65,10 +66,9 @@
    */
 
   Model.prototype.toggle = function(id,cb) {
-    var todo = this.store.get(id);
-    var isComplete = todo.isComplete;
+    var todo = this.store.get({id:id});
 
-    this.store.update(id,'isComplete',!isComplete,cb);
+    this.store.update(id,{ 'isComplete': !todo.items[0].isComplete },cb);
   }
 
   /**
@@ -81,6 +81,18 @@
 
   Model.prototype.clear = function(cb) {
     this.store.deleteAll(cb);
+  }
+
+  /**
+   *
+   * Return todos based on certain parameters
+   *
+   * @param {function} cb Callback
+   *
+   */
+
+  Model.prototype.find = function(params,cb) {
+    this.store._query(cb,params);
   }
 
   window.App = window.App || {};

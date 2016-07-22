@@ -6,6 +6,11 @@
    */
 
    function Store() {
+     fetch('todos', { method: 'get' })
+      .then(function(res) {
+        if(res.ok) console.log(res.body);
+      });
+
      if(!this._db) {
        this._db = [];
      }

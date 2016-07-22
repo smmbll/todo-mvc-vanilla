@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <title>To-do</title>
-  <!-- build:css styles/app.min.css -->
+  <!-- build:css assets/styles/app.min.css -->
   <link rel="stylesheet" type="text/css" href="assets/styles/css/app.css" />
   <!-- endbuild -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -38,7 +38,7 @@
       <footer class="todo-controls">
         <div class="btn-toolbar">
           <div class="btn-group">
-            <button class="btn btn-default btn-show-all">
+            <button class="btn btn-default btn-show-all active">
               All
             </button>
             <button class="btn btn-default btn-show-completed">
@@ -55,7 +55,8 @@
       </footer>
     </div>
   </div>
-  <!-- build:js scripts/app.js -->
+  <!-- build:js assets/scripts/app.js -->
+  <script src="../bower_components/fetch/fetch.js"></script> <!-- Polyfill for Fetch API -->
   <script src="assets/scripts/store.js"></script>
   <script src="assets/scripts/model.js"></script>
   <script src="assets/scripts/view.js"></script>

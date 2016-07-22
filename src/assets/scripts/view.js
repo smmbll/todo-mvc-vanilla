@@ -16,9 +16,7 @@
       $add: document.querySelector('.todo-input .btn-add'),
       $complete: document.querySelector('.todo-list-item .btn-complete'),
       $remove: document.querySelector('.todo-list-item .btn-remove'),
-      $all: document.querySelector('.btn-show-all'),
-      $completed: document.querySelector('.btn-show-completed'),
-      $uncompleted: document.querySelector('.btn-show-uncompleted'),
+      $controls: document.querySelector('.todo-controls .btn-group'),
       $clear: document.querySelector('.btn-clear-all')
     };
 
@@ -26,14 +24,12 @@
     self._todoTemplate = '<li class="todo-list-item row%%completeClass%%" data-id="%%id%%">'
                             + '<div class="col-md-2 todo-number">%%number%%</div>'
                             + '<div class="col-md-8 todo-text">%%text%%</div>'
-                            + '<div class="col-md-1">'
-                              + '<button type="button" class="btn-complete close" aria-label="Complete">'
-                                + '<i class="fa fa-%%circleClass%%" aria-hidden="true"></i>'
-                              + '</button>'
-                            + '</div>'
-                            + '<div class="col-md-1">'
+                            + '<div class="col-md-2">'
                               + '<button type="button" class="btn-remove close" aria-label="Close">'
                                 + '<i class="fa fa-times-circle-o" aria-hidden="true"></i>'
+                              + '</button>'
+                              + '<button type="button" class="btn-complete close" aria-label="Complete">'
+                                + '<i class="fa fa-%%circleClass%%" aria-hidden="true"></i>'
                               + '</button>'
                             + '</div>'
                         + '</li>';
@@ -94,12 +90,29 @@
 		return self._findParentNode(el.parentNode, tagName);
   }
 
-  View.prototype.render = function(nodes,type,params) {
+  View.prototype.render = function(data,type,params) {
     var self = this;
+    var items = data.items;
     var DOM = self.DOM;
+    var $list = DOM.$list;
+    var $listClasses = $list.classList;
 
     switch(type) {
+      case 'toggleActive':
+        console.log('toggle active firing');
+        var $buttons = DOM.$controls.querySelectorAll('button');
+        Array.prototype.forEach.call($buttons, function($button) {
+            $button.classList.remove('active');
+        });
+
+        var $buttonClasses = document.querySelector(params.buttonClass).classList;
+
+        if(!$buttonClasses.contains('active')) {
+          $buttonClasses.add('active');
+        }
+      break;
       case 'updateCompleted':
+        console.log('update completed firing');
         var $counterTally = DOM.$counterTally;
         var $counterCompleted = DOM.$counterCompleted;
         var completed = params.completed;
@@ -112,20 +125,20 @@
           $counterTally.classList.add('hidden');
         }
       default:
-        var $list = DOM.$list;
-        var $listClasses = $list.classList;
-        var newList = self._updateList(nodes);
-
-        // Update list contents and counter
-        $list.innerHTML = newList;
-        DOM.$counterTotal.innerHTML = nodes.length;
-
-        if(newList.length && $listClasses.contains('hidden')) { // If the list length is 0 we need to hide the list element.
-          $listClasses.remove('hidden');
-        } else if(!newList.length && !$listClasses.contains('hidden')) { // If list length is greater than 0, and the class isn't already there, we want to show the list element.
-          $listClasses.add('hidden');
-        }
+        console.log('default case firing');
+        // Update counter only for tasks that deliver an updated
+        // list of nodes (i.e. adding or removing, but not toggling)
+        DOM.$counterTotal.innerHTML = data.counter;
       break;
+    }
+
+    var newList = self._updateList(data.items);
+    $list.innerHTML = newList;
+
+    if(newList.length && $listClasses.contains('hidden')) { // If the list length is 0 we need to hide the list element.
+      $listClasses.remove('hidden');
+    } else if(!newList.length && !$listClasses.contains('hidden')) { // If list length is greater than 0, and the class isn't already there, we want to show the list element.
+      $listClasses.add('hidden');
     }
   }
 
@@ -134,6 +147,7 @@
     var cb = cb || function() {};
     var DOM = self.DOM;
     var $input = DOM.$input;
+    var $list = DOM.$list;
 
     switch(e) {
       case 'addTodo':
@@ -160,7 +174,7 @@
         // we have to register the click event with the list itself, and then
         // check to see the source (the same is true for catching the complete)
         // event.
-        DOM.$list.addEventListener('click', function(e) {
+        $list.addEventListener('click', function(e) {
           if(e.target.parentElement.classList.contains('btn-remove')) {
             var todo = self._findParentNode(e.target,'li');
             var id = todo.getAttribute('data-id');
@@ -170,7 +184,7 @@
         });
       break;
       case 'toggleComplete':
-        DOM.$list.addEventListener('click', function(e) {
+        $list.addEventListener('click', function(e) {
           if(e.target.parentElement.classList.contains('btn-complete')) {
             var todo = self._findParentNode(e.target,'li');
             var id = todo.getAttribute('data-id');
@@ -184,7 +198,24 @@
           cb();
         });
       break;
+      case 'toggleControls':
+        DOM.$controls.addEventListener('click', function(e) {
+          var targetClasses = e.target.classList;
 
+          if(!targetClasses.contains('active')) {
+            var buttonType = '';
+
+            if(targetClasses.contains('btn-show-all')) {
+              buttonType = 'showAll';
+            } else if(targetClasses.contains('btn-show-completed')) {
+              buttonType = 'showCompleted';
+            } else if(targetClasses.contains('btn-show-uncompleted')) {
+              buttonType = 'showUncompleted';
+            }
+            cb(buttonType);
+          }
+        });
+      break;
     }
   }
 

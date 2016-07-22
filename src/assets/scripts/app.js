@@ -14,4 +14,5 @@
   }
 
   var runningApp = new RunApp();
+
 })(window);

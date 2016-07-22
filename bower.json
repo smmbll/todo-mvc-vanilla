@@ -1,7 +1,7 @@
 {
   "name": "todo-app",
   "description": "an app to tell what you need to do",
-  "main": "index.js",
+  "main": "server.js",
   "authors": [
     "smmbll"
   ],
@@ -16,6 +16,8 @@
   ],
   "dependencies": {
     "bootstrap": "v4.0.0-alpha.2",
-    "components-font-awesome": "^4.6.3"
+    "components-font-awesome": "^4.6.3",
+    "fetch": "^1.0.0",
+    "es6-promise": "^3.2.2"
   }
 }
