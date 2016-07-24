@@ -1,15 +1,19 @@
 (function(window) {
+  'use strict';
+  var constants = window.App.constants || {};
   /**
    *
    * View class
    *
+   * @constructor
    */
   function View() {
     var self = this;
 
+    // Here we store a model of the DOM
     self.DOM = {
       $list: document.querySelector('.todo-list'),
-      $counterTally: document.querySelector('.todo-counter .todos-tally'),
+      $counterGroup: document.querySelector('.todo-counter .todos-tally'),
       $counterTotal: document.querySelector('.todo-counter .todos-total'),
       $counterCompleted: document.querySelector('.todo-counter .todos-completed'),
       $input: document.querySelector('.todo-input input'),
@@ -17,65 +21,88 @@
       $complete: document.querySelector('.todo-list-item .btn-complete'),
       $remove: document.querySelector('.todo-list-item .btn-remove'),
       $controls: document.querySelector('.todo-controls .btn-group'),
+      $filters: document.querySelectorAll('.todo-controls .btn-group button'),
       $clear: document.querySelector('.btn-clear-all')
     };
 
-    // Some clever formatting to make this more legible
-    self._todoTemplate = '<li class="todo-list-item row%%completeClass%%" data-id="%%id%%">'
-                            + '<div class="col-md-2 todo-number">%%number%%</div>'
-                            + '<div class="col-md-8 todo-text">%%text%%</div>'
+    // A template for a todo item
+    // Some clever formatting makes this more legible
+    self._todoTemplate = '<li class="todo-list-item row<%completeClass%><%hide%>" data-id="<%id%>">'
+                            + '<div class="col-md-2 todo-number"><%number%></div>'
+                            + '<div class="col-md-8 todo-text"><%text%></div>'
                             + '<div class="col-md-2">'
                               + '<button type="button" class="btn-remove close" aria-label="Close">'
                                 + '<i class="fa fa-times-circle-o" aria-hidden="true"></i>'
                               + '</button>'
                               + '<button type="button" class="btn-complete close" aria-label="Complete">'
-                                + '<i class="fa fa-%%circleClass%%" aria-hidden="true"></i>'
+                                + '<i class="fa fa-<%circleClass%>" aria-hidden="true"></i>'
                               + '</button>'
                             + '</div>'
                         + '</li>';
   }
 
+  /**
+   *
+   * Function to find a todo by id
+   *
+   * @param {string} id Hexadecimal id.
+   */
+
   View.prototype._getTodoById = function(id) {
     return querySelector('[data-item-"' + id + '"');
-  }
+  };
 
-  View.prototype._updateList = function(todos) {
+  /**
+   *
+   * Iterates over an array of todo items and creates
+   * their DOM equivalent
+   *
+   * @param {array} items Array of todo items
+   * @param {object} filter (Optional) A filter to hide or display certain items.
+   */
+
+  View.prototype._updateList = function(items,filter) {
     var self = this;
     var todoNodes = '';
     var todoTemplate;
+    var filterTest = filter && typeof filter === 'object' && Object.keys(filter).length;
 
-    if(todos && typeof todos === 'object') {
-      todos.forEach(function(todo,i) {
+    if(items && typeof items === 'object' && items.forEach) {
+      items.forEach(function(item,i) {
         todoTemplate = self._todoTemplate;
         todoTemplate = todoTemplate
-                        .replace('%%id%%', todo.id)
-                        .replace('%%number%%', i + 1)
-                        .replace('%%text%%',todo.text)
-                        .replace('%%completeClass%%',todo.isComplete ? ' complete' : '')
-                        .replace('%%circleClass%%',todo.isComplete ? 'check-circle-o' : 'circle-o');
+                        .replace('<%id%>', item._id)
+                        .replace('<%number%>', i + 1)
+                        .replace('<%text%>',item.text)
+                        .replace('<%completeClass%>',item.isComplete ? ' complete' : '')
+                        .replace('<%circleClass%>',item.isComplete ? 'check-circle-o' : 'circle-o');
 
+        // If there is a filter, check if meets filter params
+        var passesTest = true;
+
+        if(filterTest) {
+          for(var key in filter) {
+            if(!item.hasOwnProperty(key) || item[key] !== filter[key]) {
+              passesTest = false;
+            }
+          }
+        }
+
+        todoTemplate = todoTemplate.replace('<%hide%>',passesTest ? '' : ' hidden');
         todoNodes = todoNodes + todoTemplate;
       });
     }
 
     return todoNodes;
-  }
+  };
 
-  View.prototype._markCompleted = function(id) {
-    var todo = this.getTodoById(id);
-
-    if(!todo.classList.contains('complete')) { // Make sure we only add it once.
-      todo.classList.add('complete');
-    }
-  }
-
-  View.prototype._markUncompleted = function(id) {
-    var todo = this.getTodoById(id);
-
-    if(todo.classList.contains('complete')) { // Make sure we only add it once.
-      todo.classList.remove('complete');
-    }
-  }
+  /**
+   *
+   * Finds a specified tag amongst an element's parents
+   *
+   * @param {node} el DOM node
+   * @param {string} tagName Name of tag to find
+   */
 
   // Thanks to kentcdodds for this very useful function
   View.prototype._findParentNode = function(el,tagName) {
@@ -88,51 +115,86 @@
 			return el.parentNode;
 		}
 		return self._findParentNode(el.parentNode, tagName);
-  }
+  };
 
-  View.prototype.render = function(data,type,params) {
+  /**
+   *
+   * Go through a given list of todo items and determine
+   * which are completed
+   *
+   * @param {items} todos Array of todo items.
+   */
+
+  View.prototype._countCompletedTodos = function(items) {
+    var completed = 0;
+
+    if(items && typeof items === 'object' && items.forEach) {
+      items.forEach(function(item) {
+        if(item.isComplete === true) {
+          ++completed;
+        }
+      });
+    }
+
+    return completed;
+  };
+
+  /**
+   *
+   * Render function
+   * Creates the DOM and accepts options for additional
+   * rendering decisions, such as toggling the controls
+   * or updating our tallies of completed and uncompleted
+   * todos.
+   *
+   * @param {data} object An object containing a list of
+   * todos and the current filter
+   * @param {option} string An optional additional rendering decision
+   * @param {params} object An object containing optional parameters
+   */
+
+  View.prototype.render = function(data,option,params) {
     var self = this;
-    var items = data.items;
+    var items = data.items || [];
+    var filter = data.filter;
     var DOM = self.DOM;
     var $list = DOM.$list;
     var $listClasses = $list.classList;
 
-    switch(type) {
-      case 'toggleActive':
-        console.log('toggle active firing');
-        var $buttons = DOM.$controls.querySelectorAll('button');
-        Array.prototype.forEach.call($buttons, function($button) {
-            $button.classList.remove('active');
+    switch(option) {
+      case constants.renderOptions.TOGGLE_ACTIVE:
+        var $filters = DOM.$filters;
+        Array.prototype.forEach.call($filters, function($filter) {
+            $filter.classList.remove('active');
         });
 
-        var $buttonClasses = document.querySelector(params.buttonClass).classList;
+        var $filterClasses = document.querySelector('.' + params.toggleClass).classList;
 
-        if(!$buttonClasses.contains('active')) {
-          $buttonClasses.add('active');
+        if(!$filterClasses.contains('active')) {
+          $filterClasses.add('active');
         }
       break;
-      case 'updateCompleted':
-        console.log('update completed firing');
-        var $counterTally = DOM.$counterTally;
+      case constants.renderOptions.UPDATE_COMPLETED:
+        var $counterGroup = DOM.$counterGroup;
         var $counterCompleted = DOM.$counterCompleted;
-        var completed = params.completed;
+        var numCompletedTodos = self._countCompletedTodos(items);
 
-        $counterCompleted.innerHTML = completed;
+        $counterCompleted.innerHTML = numCompletedTodos;
 
-        if(completed > 0) {
-          $counterTally.classList.remove('hidden')
+        if(numCompletedTodos > 0) {
+          $counterGroup.classList.remove('hidden');
         } else {
-          $counterTally.classList.add('hidden');
+          $counterGroup.classList.add('hidden');
         }
       default:
-        console.log('default case firing');
         // Update counter only for tasks that deliver an updated
         // list of nodes (i.e. adding or removing, but not toggling)
-        DOM.$counterTotal.innerHTML = data.counter;
+        DOM.$counterTotal.innerHTML =  items.length;
       break;
     }
 
-    var newList = self._updateList(data.items);
+    // Create node list from data and set it on the view
+    var newList = self._updateList(items,filter);
     $list.innerHTML = newList;
 
     if(newList.length && $listClasses.contains('hidden')) { // If the list length is 0 we need to hide the list element.
@@ -140,17 +202,25 @@
     } else if(!newList.length && !$listClasses.contains('hidden')) { // If list length is greater than 0, and the class isn't already there, we want to show the list element.
       $listClasses.add('hidden');
     }
-  }
+  };
+
+  /**
+   *
+   * The event handler function binds events to the DOM and
+   * triggers callbacks specified by the controller
+   *
+   * @param {e} string Event Name
+   * @param {function} cb Callback function to execute
+   */
 
   View.prototype.eventHandler = function(e, cb) {
     var self = this;
-    var cb = cb || function() {};
     var DOM = self.DOM;
     var $input = DOM.$input;
     var $list = DOM.$list;
 
     switch(e) {
-      case 'addTodo':
+      case constants.events.ADD_TODO:
         // User can add a todo by hitting enter after focusing input
         $input.addEventListener('focus',function() {
           document.addEventListener('keypress', function(e) {
@@ -169,7 +239,7 @@
           $input.value = ''; // Clear input
         });
       break;
-      case 'removeTodo':
+      case constants.events.REMOVE_TODO:
         // Because our list items don't exist when the View is registered,
         // we have to register the click event with the list itself, and then
         // check to see the source (the same is true for catching the complete)
@@ -183,7 +253,7 @@
           }
         });
       break;
-      case 'toggleComplete':
+      case constants.events.TOGGLE_COMPLETE:
         $list.addEventListener('click', function(e) {
           if(e.target.parentElement.classList.contains('btn-complete')) {
             var todo = self._findParentNode(e.target,'li');
@@ -193,31 +263,31 @@
           }
         });
       break;
-      case 'clearAll':
+      case constants.events.CLEAR_ALL:
         DOM.$clear.addEventListener('click', function() {
           cb();
         });
       break;
-      case 'toggleControls':
+      case constants.events.TOGGLE_FILTER:
         DOM.$controls.addEventListener('click', function(e) {
           var targetClasses = e.target.classList;
 
           if(!targetClasses.contains('active')) {
-            var buttonType = '';
+            var filterType = '';
 
-            if(targetClasses.contains('btn-show-all')) {
-              buttonType = 'showAll';
-            } else if(targetClasses.contains('btn-show-completed')) {
-              buttonType = 'showCompleted';
-            } else if(targetClasses.contains('btn-show-uncompleted')) {
-              buttonType = 'showUncompleted';
+            if(targetClasses.contains(constants.filterTypes.SHOW_ALL)) {
+              filterType = constants.filterTypes.SHOW_ALL;
+            } else if(targetClasses.contains(constants.filterTypes.SHOW_COMPLETED)) {
+              filterType = constants.filterTypes.SHOW_COMPLETED;
+            } else if(targetClasses.contains(constants.filterTypes.SHOW_UNCOMPLETED)) {
+              filterType = constants.filterTypes.SHOW_UNCOMPLETED;
             }
-            cb(buttonType);
+            cb(filterType);
           }
         });
       break;
     }
-  }
+  };
 
   window.App = window.App || {};
   window.App.View = View;

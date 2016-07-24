@@ -9,7 +9,8 @@ var useref = require('gulp-useref');
 var uglify = require('gulp-uglify');
 var gulpIf = require('gulp-if');
 var cssnano = require('gulp-cssnano');
-var jslint = require('gulp-jslint');
+var jshint = require('gulp-jshint');
+var stylish = require('jshint-stylish');
 var size = require('gulp-size');
 var lazypipe = require('lazypipe');
 var browserSync = require('browser-sync');
@@ -40,7 +41,12 @@ var runCommand = function(command) {
  */
 gulp.task('bower', runCommand.bind(null,'bower install'));
 gulp.task('npm', runCommand.bind(null,'npm install'));
-gulp.task('setup',['npm','bower']);
+// Get font-awesome icons out of bower and into fonts
+gulp.task('icons', function() { 
+    gulp.src(paths.bower + '/components-font-awesome/fonts/**.*') 
+        .pipe(gulp.dest(paths.src + paths.styles + '/fonts')); 
+});
+gulp.task('setup',['npm','bower','icons']);
 
 /**
  * Development Tasks
@@ -75,17 +81,11 @@ gulp.task('sass', function() {
 
 gulp.task('js', function() {
   gulp.src(paths.src + paths.scripts + '/**/*.js')
-    //.pipe(jslint())
-    //.pipe(jslint.reporter('stylish'))
+    .pipe(jshint())
+    .pipe(jshint.reporter(stylish))
     .pipe(browserSync.reload({
       stream: true
     }));
-});
-
-// Get font-awesome icons out of bower and into fonts
-gulp.task('icons', function() { 
-    gulp.src(paths.bower + '/components-font-awesome/fonts/**.*') 
-        .pipe(gulp.dest(paths.src + paths.styles + '/fonts')); 
 });
 
 // Watchers
@@ -100,7 +100,6 @@ gulp.task('default', ['icons','sass','js','browserSync','watch']);
 /**
  * Production Tasks
  */
-//
 gulp.task('icons:dist', function() { 
    gulp.src(paths.bower + '/components-font-awesome/fonts/**.*') 
        .pipe(gulp.dest(paths.dest + '/assets/fonts')); 
@@ -114,10 +113,10 @@ gulp.task('useref', function() {
     .pipe(cssnano);
 
   gulp.src(paths.src + '/*.html')
-    //.pipe(useref())
-    //.pipe(gulpIf('*.js', uglify()))
+    .pipe(useref())
+    .pipe(gulpIf('*.js', uglify()))
     .pipe(gulpIf('*.css', pipeline()))
-    //.pipe(size())
+    .pipe(size())
     .pipe(gulp.dest(paths.dest));
 });
 
@@ -127,6 +126,6 @@ gulp.task('build', ['icons:dist','sass','useref']);
 /**
  * App tasks
  */
-gulp.task('start-mongo', runCommand.bind(null,'mongod --dbpath ./data/'));
+gulp.task('start-mongo', runCommand.bind(null,'mongod'));
 gulp.task('stop-mongo', runCommand.bind(null,'mongo --eval "use admin; db.shutdownServer();"'));
 gulp.task('start-app', ['start-mongo'], runCommand.bind(null,'nodemon server.js'));

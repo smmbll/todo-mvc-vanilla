@@ -1,172 +1,169 @@
 (function(window){
+  'use strict';
+  var constants = window.App.constants || {};
   /**
    * Store class
    *
-   * @param {function} cb Callback
+   * @constructor
    */
 
    function Store() {
-     fetch('todos', { method: 'get' })
-      .then(function(res) {
-        if(res.ok) console.log(res.body);
-      });
-
-     if(!this._db) {
-       this._db = [];
-     }
-
-     this._filter = null;
-     this._counter = 0;
+     this._filter = {};
    }
 
   /**
    *
-   * Get method
+   * Query method returns todos from DB
    *
-   * @param {number} id Id of todo to return
-   *
+   * @param {function} cb (Optional) Callback to execute on response
    */
 
-   Store.prototype.get = function(params) {
-     return this._query(null,params);
-   }
+   Store.prototype._query = function(cb) {
+     var self = this;
+
+     return fetch(constants.urls.READ,{
+       method: 'GET'
+     })
+      .then(function(res) {
+        if(!res.ok) {
+          console.log('Request denied with status code ' + res.status);
+          return;
+        }
+
+        res.json().then(function(result) {
+          var data = {
+            items: result.items,
+            filter: self._filter
+          };
+
+          return cb && typeof cb === 'function' ? cb(data) : data;
+        });
+      });
+   };
 
     /**
      *
-     * Set method
+     * Add a todo to the DB
      *
-     * @param {object} todo Todo object
-     *
+     * @param {object} update New todo information
+     * @param {function} cb Callback
      */
 
-     Store.prototype.add = function(todo,cb) {
-       this._db.push(todo);
-       this._counter++;
+     Store.prototype.add = function(update,cb) {
+       var self = this;
 
-       this._query(cb);
-     }
+       fetch(constants.urls.CREATE,{
+         method: 'POST',
+         headers: new Headers({
+           'Content-Type': 'application/json'
+         }),
+         body: JSON.stringify({update:update})
+       })
+        .then(function(res) {
+          if(!res.ok) {
+            console.log('Request denied with status code ' + res.status);
+            return;
+          }
+
+          res.json().then(function(body) {
+            self._query(cb);
+          });
+        });
+     };
 
      /**
       *
       * Delete method
       *
-      * @param {number} id Id of item to delete
+      * @param {object} filter Filter containing identifying parameters
       * @param {function} cb Callback
-      *
       */
 
-      Store.prototype.delete = function(id,cb) {
-          var db = this._db;
+      Store.prototype.delete = function(filter,cb) {
+        var self = this;
 
-          db.forEach(function(todo,i) {
-            if(todo.id == id) {
-              db.splice(i,1); // Id is a string so we can't check exact equivalence
-            }
-          });
+        fetch(constants.urls.DELETE,{
+          method: 'DELETE',
+          headers: new Headers({
+            'Content-Type': 'application/json'
+          }),
+          body: JSON.stringify({filter:filter})
+        })
+        .then(function(res) {
+          if(!res.ok) {
+            console.log('Request denied with status code ' + res.status);
+            return;
+          }
 
-          this._counter = this._counter > 0 ? --this._counter : 0;
-
-          this._query(cb);
-      }
+          self._query(cb);
+        });
+      };
 
       /**
        *
        * DeleteAll method
        *
        * @param {function} cb Callback
-       *
        */
 
        Store.prototype.deleteAll = function(cb) {
-         this._db = [];
-         this._counter = 0;
+         var self = this;
 
-         this._query(cb);
-       }
+         fetch(constants.urls.DELETE_ALL,{
+           method: 'delete'
+         })
+         .then(function(res) {
+           if(!res.ok) {
+             console.log('Request denied with status code ' + res.status);
+             return;
+           }
+
+           self._query(cb);
+         });
+       };
 
       /**
        *
        * Update method
        *
-       * @param {number} id Id of item to delete
-       * @param {object} props Properties to update.
+       * @param {object} filter Object containing identifying parameters
+       * @param {object} update Object containing parameters to update
        * @param {function} cb Callback
-       *
        */
 
-       Store.prototype.update = function(id,props,cb) {
-           var db = this._db;
+       Store.prototype.update = function(filter,update,cb) {
+         var self = this;
 
-           db.forEach(function(todo,i) {
-             if(todo.id == id) {
-               for(var key in props) {
-                 todo[key] = props[key];
-               }
-             }
-           });
+         fetch(constants.urls.UPDATE,{
+           method: 'put',
+           headers: new Headers({
+             'Content-Type': 'application/json'
+           }),
+           body: JSON.stringify({filter:filter,update:update})
+         })
+         .then(function(res) {
+           if(!res.ok) {
+             console.log('Request denied with status code ' + res.status);
+             return;
+           }
 
-           this._query(cb);
-       }
+           self._query(cb);
+         });
+       };
 
        /**
         *
         * Filter method
         *
-        * @param {object} Parameters to filter by
+        * @param {object} filter Object containing filter parameters
         * @param {function} cb Callback
-        *
         */
 
         Store.prototype.filter = function(filter,cb) {
-          if(this._filter !== filter) {
-            this._filter = filter;
-          }
+          this._filter = filter;
 
           this._query(cb);
-        }
-
-       /**
-        *
-        * Query method
-        *
-        * All roads ultimately lead here
-        *
-        * @param {object} params Object containing key/value pairs to search for
-        * @param {function} cb Callback
-        *
-        */
-
-        Store.prototype._query = function(cb,params) {
-          var db = this._db;
-          var filter = params ? params : this._filter;
-          var result = [];
-          var counter = this._counter;
-
-          if(filter && typeof filter === 'object') {
-            for(var key in filter) {
-              db.forEach(function(todo) {
-                if(todo[key] == filter[key]) {
-                  result.push(todo);
-                }
-              })
-            }
-          } else {
-            result = db;
-          }
-
-          // Always return an up-to-date count of total
-          // nodes
-          var data = {
-            items: result,
-            counter: counter
-          };
-
-          if(cb) {
-            cb(data);
-          } else {
-            return data
-          }
-        }
+        };
 
        window.App = window.App || {};
        window.App.Store = Store;

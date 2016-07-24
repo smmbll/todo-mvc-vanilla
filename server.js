@@ -1,3 +1,4 @@
+'use strict';
 /**
  * Configuration
  */
@@ -68,7 +69,7 @@ app.use(function(req,res,next) {
     for(var param in query) {
       var value = query[param];
       var valueToFloat = parseFloat(value);
-      console.log('value of query param',value,parseFloat(value));
+
       if(!isNaN(valueToFloat)) { // Cast to numbers
         query[param] = valueToFloat;
       } else if(value === 'true') { // Cast to bools
@@ -92,10 +93,8 @@ app.get(function (req, res, next) {
   else next();
 });
 
-// CRUD
+// READ
 app.get('/todos', function(req,res) {
-  console.log('Url',req.url);
-  console.log('Query parameters',req.query);
   var query = req.query;
   var searchPattern = Object.keys(query).length ? query : {};
 
@@ -107,6 +106,7 @@ app.get('/todos', function(req,res) {
   });
 });
 
+// CREATE
 app.post('/todos/add', function(req,res) {
   db.collection('todos').save(req.body.update, function(err,result) {
     if(err) return console.error(err);
@@ -116,14 +116,8 @@ app.post('/todos/add', function(req,res) {
   });
 });
 
+// UPDATE
 app.put('/todos/update', function(req,res) {
-  // Need to convert ids to MongoDB ObjectID format
-  // in order to match
-  /*var _id = req.body._id;
-
-  if(_id) {
-    req.body._id = ObjectID(_id);
-  }*/
   db.collection('todos').findOneAndUpdate(req.body.filter,{ $set: req.body.update }, function(err,result) {
     if(err) console.error(err);
 
@@ -133,21 +127,13 @@ app.put('/todos/update', function(req,res) {
       console.log('Nothing updated');
     }
 
-    // Return updated properties (like isComplete)
+    // Return updated properties
     res.send(req.body.update);
   });
 });
 
+// DELETE
 app.delete('/todos/del', function(req,res) {
-  // Need to convert ids to MongoDB ObjectID format
-  // in order to match
-  /*var _id = req.body._id;
-
-  if(_id) {
-    req.body._id = ObjectID(_id);
-  }*/
-
-  console.log('delete request body',req.body);
   db.collection('todos').findOneAndDelete(req.body.filter, function(err, result) {
       if(err) return console.error(err);
 
@@ -156,12 +142,13 @@ app.delete('/todos/del', function(req,res) {
       } else {
         console.log(req.body.filter._id,'not found');
       }
+
       res.send(result);
     });
 });
 
+// DELETE ALL
 app.delete('/todos/del/all', function(req,res) {
-  console.log('clear database');
   db.collection('todos').deleteMany({}, function(err,result) {
     console.log('database cleared');
     res.send(result);
