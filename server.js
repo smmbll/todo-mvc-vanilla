@@ -54,8 +54,32 @@ app.use(function(req,res,next) {
       next();
     });
   } else {
-    next();
+    next(); // We need to make sure that next() isn't called until
+            // databasing operations are finished; but if no parameters
+            // are supplied in req.filter and req.update, we still
+            // need to call next().
   }
+});
+// Query types need to be cast correctly
+app.use(function(req,res,next) {
+  var query = req.query;
+
+  if(query && typeof query === 'object' && Object.keys(query).length) {
+    for(var param in query) {
+      var value = query[param];
+      var valueToFloat = parseFloat(value);
+      console.log('value of query param',value,parseFloat(value));
+      if(!isNaN(valueToFloat)) { // Cast to numbers
+        query[param] = valueToFloat;
+      } else if(value === 'true') { // Cast to bools
+        query[param] = true;
+      } else if(value === 'false') {
+        query[param] = false;
+      }
+    }
+  }
+
+  next();
 });
 
 /**
@@ -70,23 +94,16 @@ app.get(function (req, res, next) {
 
 // CRUD
 app.get('/todos', function(req,res) {
-  var cursor = db.collection('todos').find({}).toArray(function(err,result) {
-    if(err) return console.error(err);
-
-    console.log({ data: result }, 'get all request');
-    res.json({data:result});
-  });
-});
-
-app.get('/todos/query', function(req,res) {
-  /*console.log('Url',req.url);
+  console.log('Url',req.url);
   console.log('Query parameters',req.query);
-  console.log('Body',req.body);*/
-  db.collection('todos').find(req.body.filter).toArray(function(err,result) {
+  var query = req.query;
+  var searchPattern = Object.keys(query).length ? query : {};
+
+  db.collection('todos').find(searchPattern).toArray(function(err,result) {
     if(err) return console.error(err);
 
-    //console.log({ data: result }, 'get request');
-    res.json({data:result});
+    console.log('/todos/query result',{ data: result });
+    res.json({items:result});
   });
 });
 
@@ -107,7 +124,7 @@ app.put('/todos/update', function(req,res) {
   if(_id) {
     req.body._id = ObjectID(_id);
   }*/
-  db.collection('todos').findOneAndUpdate(req.body.filter,req.body.update, function(err,result) {
+  db.collection('todos').findOneAndUpdate(req.body.filter,{ $set: req.body.update }, function(err,result) {
     if(err) console.error(err);
 
     if(result.value) {
@@ -116,7 +133,8 @@ app.put('/todos/update', function(req,res) {
       console.log('Nothing updated');
     }
 
-    res.send(result);
+    // Return updated properties (like isComplete)
+    res.send(req.body.update);
   });
 });
 
