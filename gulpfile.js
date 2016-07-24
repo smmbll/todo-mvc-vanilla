@@ -40,13 +40,12 @@ var runCommand = function(command) {
  * Setup tasks -- install bower and npm modules
  */
 gulp.task('bower', runCommand.bind(null,'bower install'));
-gulp.task('npm', runCommand.bind(null,'npm install'));
 // Get font-awesome icons out of bower and into fonts
 gulp.task('icons', function() { 
     gulp.src(paths.bower + '/components-font-awesome/fonts/**.*') 
         .pipe(gulp.dest(paths.src + paths.styles + '/fonts')); 
 });
-gulp.task('setup',['npm','bower','icons']);
+gulp.task('setup',['bower','icons']);
 
 /**
  * Development Tasks
@@ -114,8 +113,8 @@ gulp.task('useref', function() {
 
   gulp.src(paths.src + '/*.html')
     .pipe(useref())
-    .pipe(gulpIf('*.js', uglify()))
-    .pipe(gulpIf('*.css', pipeline()))
+    .pipe(gulpIf('*.js',uglify()))
+    .pipe(gulpIf('*.css',pipeline()))
     .pipe(size())
     .pipe(gulp.dest(paths.dest));
 });
