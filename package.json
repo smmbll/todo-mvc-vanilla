@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "an app to tell what you need to do",
   "main": "server.js",
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/smmbll/todo-mvc-vanilla.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smmbll/todo-mvc-vanilla.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -30,6 +30,7 @@
     "gulp-autoprefixer": "^3.1.0",
     "gulp-cssnano": "^2.1.2",
     "gulp-if": "^2.0.1",
+    "gulp-inject": "^4.1.0",
     "gulp-jshint": "^2.0.1",
     "gulp-load-plugins": "^1.2.4",
     "gulp-sass": "^2.3.2",

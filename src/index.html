@@ -3,7 +3,7 @@
 <head>
   <title>To-do</title>
   <!-- build:css assets/styles/app.min.css -->
-  <link rel="stylesheet" type="text/css" href="assets/styles/css/app.css" />
+  <link rel="stylesheet" type="text/css" href="assets/styles/app.css" />
   <!-- endbuild -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -56,11 +56,14 @@
     </div>
   </div>
   <!-- build:js assets/scripts/app.js -->
-  <script src="../bower_components/fetch/fetch.js"></script> <!-- Polyfill for Fetch API -->
-  <script src="../bower_components/es6-promise/promise.js"></script> <!-- Polyfill for Promise API -->
+  <!-- vendor:js -->
+  <script src="/bower_components/fetch/fetch.js"></script>
+  <script src="/bower_components/es6-promise/promise.js"></script>
+  <!-- endinject -->
   <script src="assets/scripts/constants.js"></script>
-  <script src="assets/scripts/store-dynamic.js"></script>
-  <!-- <script src="assets/scripts/store-static.js"></script> -->
+  <!-- store:js -->
+  <script src="assets/scripts/store-static.js"></script>
+  <!-- endinject -->
   <script src="assets/scripts/model.js"></script>
   <script src="assets/scripts/view.js"></script>
   <script src="assets/scripts/controller.js"></script>
@@ -68,3 +71,4 @@
   <!-- endbuild -->
 </body>
 </html>
+tml>

@@ -80,6 +80,10 @@ button {
       line-height: 2;
     }
 
+    .todo-text {
+      word-wrap: break-word;
+    }
+
     .btn-complete {
       font-size:24px;
       margin-right:10px;

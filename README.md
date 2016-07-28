@@ -17,11 +17,11 @@ To start the dev server, just use
 
 	npm start
 
-In src/index.html, you’ll notice that among the scripts included before the </body> tag are two stores: store-dynamic.js and store-static.js. In order to use the dev server, you’ll have to uncomment store-static.js and comment out store-dynamic. If you want to run the production server, comment out store-static and reinclude store-dynamic. Then run
+When you're ready to try out the production server, build the dist with
 
 	npm run build
 
-to build the application assets, followed by
+and then
 
 	npm run deploy
 
