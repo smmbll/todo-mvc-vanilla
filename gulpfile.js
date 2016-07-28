@@ -40,7 +40,7 @@ gulp.task('bower', runCommand.bind(null,'bower install'));
 // Get font-awesome icons out of bower and into fonts
 gulp.task('icons', function() { 
     gulp.src(paths.bower + '/components-font-awesome/fonts/**.*') 
-        .pipe(gulp.dest(paths.src + 'assets/fonts')); 
+        .pipe(gulp.dest(paths.src + '/assets/fonts')); 
 });
 
 // Set environment variables
