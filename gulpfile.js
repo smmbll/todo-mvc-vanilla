@@ -4,8 +4,10 @@
 
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
+var os = require('os');
 var stylish = require('jshint-stylish');
 var lazypipe = require('lazypipe');
+var runSequence = require('run-sequence');
 var browserSync = require('browser-sync');
 var exec = require('child_process').exec;
 var del = require('del');
@@ -16,6 +18,9 @@ var del = require('del');
 
 var config = require('./config').gulp;
 var paths = config.paths;
+var browser = os.platform() === 'linux' ? 'google-chrome' : (
+  os.platform() === 'darwin' ? 'google chrome' : (
+  os.platform() === 'win32' ? 'chrome' : 'firefox'));
 
 /**
  * Utility functions
@@ -35,7 +40,9 @@ var runCommand = function(command) {
  */
 
 // Install bower modules
-gulp.task('bower', runCommand.bind(null,'bower install'));
+gulp.task('bower', function() {
+  return $.bower();
+});
 
 // Get font-awesome icons out of bower and into fonts
 gulp.task('icons', function() { 
@@ -49,17 +56,19 @@ gulp.task('vendor', function() {
     .pipe(gulp.dest(paths.src + '/assets/scripts/vendor'))
 });
 
-gulp.task('setup',['bower','icons','vendor']);
+gulp.task('setup',function() {
+  runSequence('bower',['icons','vendor']);
+});
 
 /**
  * Development Tasks
  */
 
 // Start browserSync server
-gulp.task('browser-sync', ['nodemon'], function() {
+gulp.task('browser-sync', function() {
   browserSync.init(null, {
     proxy: "http://localhost:3000",
-    browser: ['google chrome'],
+    browser: [browser],
     port: 7000
   });
 });
@@ -99,7 +108,9 @@ gulp.task('watch', function() {
 });
 
 // Dev task
-gulp.task('dev', ['sass','js','start-mongo','browser-sync','watch']);
+gulp.task('dev', function() {
+  runSequence(['sass','js'],'start-mongo','nodemon','browser-sync','watch');
+});
 
 /**
  * Production Tasks
@@ -143,19 +154,24 @@ gulp.task('start-mongo', runCommand.bind(null,'mongod'));
 
 gulp.task('stop-mongo', runCommand.bind(null,'mongo --eval "use admin; db.shutdownServer();"'));
 
-gulp.task('nodemon', function(cb) {
-  var serverStarted = false;
-
+gulp.task('nodemon', function() {
   $.nodemon({
     script: 'server.js',
     ext: 'js html',
     env: { 'NODE_ENV': process.argv[process.argv.length - 1] }
-  }).on('start', function() {
-    if(!serverStarted && cb) {
-      cb();
-      serverStarted = true;
-    }
   });
 });
 
-gulp.task('deploy', ['start-mongo','nodemon']);
+gulp.task('open',function() {
+  var options = {
+    uri: 'localhost:3000',
+    app: browser
+  };
+
+  gulp.src(__filename)
+    .pipe($.open(options));
+});
+
+gulp.task('deploy', function() {
+  runSequence('start-mongo','nodemon','open');
+});
