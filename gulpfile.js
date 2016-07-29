@@ -60,7 +60,7 @@ gulp.task('browser-sync', ['nodemon'], function() {
   browserSync.init(null, {
     proxy: "http://localhost:3000",
     browser: ['google chrome'],
-    port: 4000
+    port: 7000
   });
 });
 
@@ -99,7 +99,7 @@ gulp.task('watch', function() {
 });
 
 // Dev task
-gulp.task('dev', ['sass','js','run','watch']);
+gulp.task('dev', ['sass','js','start-mongo','browser-sync','watch']);
 
 /**
  * Production Tasks
@@ -158,4 +158,4 @@ gulp.task('nodemon', function(cb) {
   });
 });
 
-gulp.task('run', ['start-mongo','nodemon']);
+gulp.task('deploy', ['start-mongo','nodemon']);

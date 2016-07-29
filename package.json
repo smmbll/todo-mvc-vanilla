@@ -12,7 +12,7 @@
     "setup": "npm install && gulp setup",
     "start": "gulp dev --env development",
     "build": "gulp build",
-    "deploy": "gulp run --env production"
+    "deploy": "gulp deploy --env production"
   },
   "author": "smmbll",
   "license": "ISC",
