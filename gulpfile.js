@@ -127,7 +127,7 @@ gulp.task('watch', function() {
   gulp.watch(paths.src + paths.scripts + '/**/*.js',['js']);
 });
 
-gulp.task('dev', ['env:dev','inject-vendor','inject-store','sass','js','browserSync','watch']);
+gulp.task('dev', ['env:dev','inject-store','sass','js','browserSync','watch']);
 
 /**
  * Production Tasks
@@ -167,7 +167,7 @@ gulp.task('env:prod',function() {
 });
 
 // Build
-gulp.task('build', ['env:prod','inject-store','inject-vendor','icons:dist','sass','useref']);
+gulp.task('build', ['env:prod','inject-store','icons:dist','sass','useref']);
 
 /**
  * App tasks
