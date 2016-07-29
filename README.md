@@ -13,7 +13,7 @@ Once you've got MongoDB installed, and assuming that you have npm, you can downl
 
 	npm run setup
 
-To start the dev server (localhost:4000), just use
+To start the dev server (localhost:7000), just use
 
 	npm start
 
