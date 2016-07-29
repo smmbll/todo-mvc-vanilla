@@ -1,19 +1,19 @@
 # Todo MVC in Vanilla JS
 
-This is a quick example of MVC architecture done in Vanilla JS.
+This is a quick example of MVC patterning done in nothing more complicated than Vanilla JS.
 
 ## Install
 
-The app comes with two types of storage: static and dynamic. In order to use the dynamic version, you’ll need to have MongoDB installed (https://www.mongodb.com/download-center?jmp=nav). If you use homebrew, this is as easy as
+Mongo is the DB of choice here, which you can get at (https://www.mongodb.com/download-center?jmp=nav); or, if you use homebrew, it's as easy as
 
 	brew update
 	brew install mongodb
 
-Once you've got MongoDB installed, you can download all assets (npm and bower modules) with
+Once you've got MongoDB installed, and assuming that you have npm, you can download all assets (npm and bower modules) with
 
 	npm run setup
 
-To start the dev server, just use
+To start the dev server (localhost:4000), just use
 
 	npm start
 
@@ -25,4 +25,4 @@ and then
 
 	npm run deploy
 
-to run MongoDB and the server. That’s it!
+to run the production server (localhost:3000). That's it!
