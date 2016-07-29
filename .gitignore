@@ -31,6 +31,10 @@ build/Release
 node_modules
 jspm_packages
 
+# Vendor files
+src/assets/scripts/vendor
+src/assets/fonts/
+
 # Optional npm cache directory
 .npm
 
