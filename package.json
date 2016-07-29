@@ -10,10 +10,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "setup": "npm install && gulp setup",
-    "start": "gulp dev",
-    "watch": "gulp dev",
+    "start": "gulp dev --env development",
     "build": "gulp build",
-    "deploy": "gulp deploy"
+    "deploy": "gulp run --env production"
   },
   "author": "smmbll",
   "license": "ISC",
@@ -30,9 +29,9 @@
     "gulp-autoprefixer": "^3.1.0",
     "gulp-cssnano": "^2.1.2",
     "gulp-if": "^2.0.1",
-    "gulp-inject": "^4.1.0",
     "gulp-jshint": "^2.0.1",
     "gulp-load-plugins": "^1.2.4",
+    "gulp-nodemon": "^2.1.0",
     "gulp-sass": "^2.3.2",
     "gulp-size": "^2.1.0",
     "gulp-sourcemaps": "^1.6.0",

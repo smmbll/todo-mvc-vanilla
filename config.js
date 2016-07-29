@@ -37,6 +37,6 @@ gulp.vendorFiles = [
 var server = config.server;
 
 server.port = 3000;
-server.path = 'dist';
+server.path = process.env.NODE_ENV === 'production' ? 'dist' : 'src';
 
 module.exports = config;

@@ -16,8 +16,6 @@ var del = require('del');
 
 var config = require('./config').gulp;
 var paths = config.paths;
-var scriptsPath = paths.src + paths.scripts + '/';
-var isProduction = false;
 
 /**
  * Utility functions
@@ -33,20 +31,6 @@ var runCommand = function(command) {
 }
 
 /**
- * Store tasks
- */
-
-// Choose store based on dev or prod environment
-gulp.task('inject-store',function() {
-  var storePath = scriptsPath;
-  storePath += isProduction ? config.stores.dynamic : config.stores.static;
-
-  gulp.src(paths.src + '/index.html')
-   .pipe($.inject(gulp.src(storePath, { read: false }), { name: 'store', relative: true }))
-   .pipe(gulp.dest(paths.src));
-});
-
-/**
  * Setup tasks
  */
 
@@ -59,37 +43,24 @@ gulp.task('icons', function() { 
         .pipe(gulp.dest(paths.src + '/assets/fonts')); 
 });
 
-// Inject scripts
-gulp.task('inject-vendor',function() {
-  var vendorFiles = isProduction ? config.vendorFiles : [];
-  var options = { name: 'vendor', empty: !isProduction };
-
-  gulp.src(paths.src + '/index.html')
-    .pipe($.inject(gulp.src(vendorFiles, { read: false }), options))
-    .pipe(gulp.dest(paths.src));
+// Move vendor files
+gulp.task('vendor', function() {
+  gulp.src(config.vendorFiles)
+    .pipe(gulp.dest(paths.src + '/assets/scripts/vendor'))
 });
 
-gulp.task('setup',['bower','icons']);
+gulp.task('setup',['bower','icons','vendor']);
 
 /**
  * Development Tasks
  */
 
-// Set environment variables
-gulp.task('env:dev', function() {
-  isProduction = false;
-});
-
 // Start browserSync server
-gulp.task('browserSync', function() {
-  browserSync({
-    open: false,
-    server: {
-      baseDir: './' + paths.src,
-      routes: {
-        '/bower_components' : paths.bower
-      }
-    }
+gulp.task('browser-sync', ['nodemon'], function() {
+  browserSync.init(null, {
+    proxy: "http://localhost:3000",
+    browser: ['google chrome'],
+    port: 4000
   });
 });
 
@@ -127,15 +98,16 @@ gulp.task('watch', function() {
   gulp.watch(paths.src + paths.scripts + '/**/*.js',['js']);
 });
 
-gulp.task('dev', ['env:dev','inject-store','sass','js','browserSync','watch']);
+// Dev task
+gulp.task('dev', ['sass','js','run','watch']);
 
 /**
  * Production Tasks
  */
 
 // Delete old dist files
-gulp.task('clean', function (cb) {
-   del(paths.dest, cb);
+gulp.task('clean', function () {
+   del(paths.dest);
 });
 
 // Move font-awesome icons to prod fonts
@@ -161,17 +133,29 @@ gulp.task('useref', function() {
     .pipe(gulp.dest(paths.dest));
 });
 
-// Set environment variable
-gulp.task('env:prod',function() {
-  isProduction = true;
-});
-
 // Build
-gulp.task('build', ['env:prod','inject-store','icons:dist','sass','useref']);
+gulp.task('build', ['icons:dist','sass','useref']);
 
 /**
- * App tasks
+ * Server tasks
  */
 gulp.task('start-mongo', runCommand.bind(null,'mongod'));
+
 gulp.task('stop-mongo', runCommand.bind(null,'mongo --eval "use admin; db.shutdownServer();"'));
-gulp.task('deploy', ['start-mongo'], runCommand.bind(null,'nodemon server.js'));
+
+gulp.task('nodemon', function(cb) {
+  var serverStarted = false;
+
+  $.nodemon({
+    script: 'server.js',
+    ext: 'js html',
+    env: { 'NODE_ENV': process.argv[process.argv.length - 1] }
+  }).on('start', function() {
+    if(!serverStarted && cb) {
+      cb();
+      serverStarted = true;
+    }
+  });
+});
+
+gulp.task('run', ['start-mongo','nodemon']);

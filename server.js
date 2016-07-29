@@ -101,7 +101,7 @@ app.get('/todos', function(req,res) {
   db.collection('todos').find(searchPattern).toArray(function(err,result) {
     if(err) return console.error(err);
 
-    console.log('/todos/query result',{ data: result });
+    console.log('/todos request successful');
     res.json({items:result});
   });
 });
@@ -111,7 +111,7 @@ app.post('/todos/add', function(req,res) {
   db.collection('todos').save(req.body.update, function(err,result) {
     if(err) return console.error(err);
 
-    console.log(req.body.update,'saved to collection.');
+    console.log('/todos/add request successful');
     res.send(result);
   });
 });
@@ -122,9 +122,9 @@ app.put('/todos/update', function(req,res) {
     if(err) console.error(err);
 
     if(result.value) {
-      console.log('Update successful',result.value);
+      console.log('todos/update request successful, update',result.value);
     } else {
-      console.log('Nothing updated');
+      console.log('todos/update request successful no update');
     }
 
     // Return updated properties
@@ -138,9 +138,9 @@ app.delete('/todos/del', function(req,res) {
       if(err) return console.error(err);
 
       if(result.value) {
-        console.log(req.body.filter._id,'deleted');
+        console.log('todos/del',req.body.filter._id,'deleted');
       } else {
-        console.log(req.body.filter._id,'not found');
+        console.log('todos/del',req.body.filter._id,'not found');
       }
 
       res.send(result);
@@ -150,7 +150,7 @@ app.delete('/todos/del', function(req,res) {
 // DELETE ALL
 app.delete('/todos/del/all', function(req,res) {
   db.collection('todos').deleteMany({}, function(err,result) {
-    console.log('database cleared');
+    console.log('/todos/del/all request successful');
     res.send(result);
   });
 });
